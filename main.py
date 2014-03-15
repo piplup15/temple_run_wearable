@@ -15,6 +15,7 @@ from shaders import *
 from textures import *
 import controls
 import road
+import mapGrid
 import star_background
 
 # Window Dimensions
@@ -32,11 +33,16 @@ visField = 85
 # Global textures
 starrySkyTex = None
 
+#Map Parameters
+ROWS = 25
+COLUMNS = 3
+mapG = None
+
 # Character Parameters
 characterTranslateX = 0.0
 
 def initGL(w, h):
-	global program, starrySkyTex
+	global program, starrySkyTex, mapG
 	glClearColor(0.0,0.0,0.0,1)
 	glClearDepth(1.0)
 	glDepthFunc(GL_LESS)
@@ -50,6 +56,7 @@ def initGL(w, h):
 	glEnable(GL_DEPTH_TEST)
 
 	starrySkyTex = loadTexture("images/starry_sky.png")
+	mapG = mapGrid.MapGrid(ROWS, COLUMNS)
 
 	if not glUseProgram:
 		print 'Missing Shader Objects!'
@@ -112,10 +119,10 @@ def display():
 	#below is temporary to see road movement
 	characterTranslateX += 0.1
 
-	print time.time()
+	#print time.time()
 
 	star_background.display(starrySkyTex, isTex, characterTranslateX)
-	road.display(ambient, diffuse, specular, emission, shininess, characterTranslateX)
+	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, characterTranslateX)
 
 	glPopMatrix()
 
