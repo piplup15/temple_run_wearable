@@ -27,8 +27,8 @@ lightPosn = numpy.array([0.5, 0.5, -1, 0], numpy.float32)
 visField = 85
 
 def initGL(w, h):
-	global grassTex, platformTex, program
-	glClearColor(0,0,0,0)
+	global program
+	glClearColor(0.5,0.5,0.5,1)
 	glClearDepth(1.0)
 	glDepthFunc(GL_LESS)
 	glEnable(GL_DEPTH_TEST)
@@ -39,9 +39,6 @@ def initGL(w, h):
 	gluPerspective(visField, float(w)/float(h), 0.1, 700.0)
 	glMatrixMode(GL_MODELVIEW)
 	glEnable(GL_DEPTH_TEST)
-
-	grassTex = loadTexture("images/grass.jpg")
-	platformTex = loadTexture("images/helicopter_landing.jpg")
 
 	if not glUseProgram:
 		print 'Missing Shader Objects!'
@@ -71,7 +68,6 @@ def display():
 	global program
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
 
@@ -79,7 +75,7 @@ def display():
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 	glLoadIdentity()
 
-	gluLookAt(1,0,0, 0, 0, 0, 0, 0, -1)
+	gluLookAt(-3,0,0, 0, 0, 0, 0, 0, 1)
 
 	ambient = glGetUniformLocation(program, "ambient")
 	diffuse = glGetUniformLocation(program, "diffuse")
@@ -96,18 +92,12 @@ def display():
 	lightcol = glGetUniformLocation(program, "lightcolor")
 	glUniform4fv(lightcol, 1, lightColor)
 
-	isTex = glGetUniformLocation(program, "isTex")
-	glUniform1i(isTex, 1)
-	# some tex files
-	#createGround(grassTex, params["z_start"])
-	#createPlatform(platformTex, params["z_start"])
-	glUniform1i(isTex, 0)
-
 	glPushMatrix()
 	glUniform4fv(ambient, 1, numpy.array([0.3, 0.3, 0.4, 1.0], numpy.float32))
 	glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 1.0], numpy.float32))
 	glUniform4fv(diffuse, 1, numpy.array([0.2, 0.2, 0.5, 1.0], numpy.float32))
 	glUniform4fv(specular, 1, numpy.array([0.5, 0.5, 0.5, 1.0], numpy.float32))
+	glUniform1f(shininess, 1)
 
 	glutSolidSphere(1,20,20)
 
@@ -125,7 +115,6 @@ def idleFunc():
 	glutPostRedisplay()
 
 def main():
-	global datafile
 	glutInit(sys.argv[0:1])
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
