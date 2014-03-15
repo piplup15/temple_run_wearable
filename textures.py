@@ -32,7 +32,6 @@ def loadTexture(name):
 
 	image = numpy.array(lst, 'B')
 
-
 	id = glGenTextures(1)
 	glBindTexture(GL_TEXTURE_2D, id)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1)

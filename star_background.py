@@ -13,10 +13,10 @@ import numpy
 import time
 import sys
 
-boxSize = 200
+boxSize = 80
 textureRepeatSize = 10
 
-def display(starrySkyTex, isTex):
+def display(starrySkyTex, isTex, characterTranslateX):
 
 	glUniform1i(isTex, 1)
 
@@ -29,17 +29,10 @@ def display(starrySkyTex, isTex):
 	glBindTexture(GL_TEXTURE_2D, starrySkyTex)
 
 	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(boxSize, -boxSize, -boxSize)
-	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(boxSize, -boxSize, boxSize)
-	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize, boxSize, boxSize)
-	glTexCoord2f(0.0, 0.0); glVertex3f(boxSize, boxSize, -boxSize)
-	glEnd()
-
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize, -boxSize, -boxSize)
-	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(-boxSize, -boxSize, boxSize)
-	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(-boxSize, boxSize, boxSize)
-	glTexCoord2f(0.0, 0.0); glVertex3f(-boxSize, boxSize, -boxSize)
+	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(boxSize + characterTranslateX, -boxSize, -boxSize)
+	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(boxSize+ characterTranslateX, -boxSize, boxSize)
+	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize+characterTranslateX, boxSize, boxSize)
+	glTexCoord2f(0.0, 0.0); glVertex3f(boxSize+characterTranslateX, boxSize, -boxSize)
 	glEnd()
 
 	glBegin(GL_QUADS);
@@ -54,13 +47,6 @@ def display(starrySkyTex, isTex):
 	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(-boxSize, -boxSize, boxSize)
 	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize, -boxSize, boxSize)
 	glTexCoord2f(0.0, 0.0); glVertex3f(boxSize, -boxSize, -boxSize)
-	glEnd()
-
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize, -boxSize, boxSize)
-	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(boxSize, -boxSize, boxSize)
-	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize, boxSize, boxSize)
-	glTexCoord2f(0.0, 0.0); glVertex3f(-boxSize, boxSize, boxSize)
 	glEnd()
 
 	glBegin(GL_QUADS);

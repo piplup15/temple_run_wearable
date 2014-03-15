@@ -32,6 +32,9 @@ visField = 85
 # Global textures
 starrySkyTex = None
 
+# Character Parameters
+characterTranslateX = 0.0
+
 def initGL(w, h):
 	global program, starrySkyTex
 	glClearColor(0.0,0.0,0.0,1)
@@ -73,14 +76,14 @@ def glutPrint(x, y, font, text, r, g, b):
 		glutBitmapCharacter(font, ord(ch))
 
 def display():
-	global program
+	global program, characterTranslateX
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-	gluLookAt(-3,0,1.5, 0, 0, 0, 0, 0, 1)
+	gluLookAt(-1+characterTranslateX,0,0.5, 0+characterTranslateX, 0, 0, 0, 0, 1)
 
 	ambient = glGetUniformLocation(program, "ambient")
 	diffuse = glGetUniformLocation(program, "diffuse")
@@ -106,8 +109,13 @@ def display():
 
 	isTex = glGetUniformLocation(program, "isTex")
 
-	star_background.display(starrySkyTex, isTex)
-	road.display(ambient, diffuse, specular, emission, shininess)
+	#below is temporary to see road movement
+	characterTranslateX += 0.1
+
+	print time.time()
+
+	star_background.display(starrySkyTex, isTex, characterTranslateX)
+	road.display(ambient, diffuse, specular, emission, shininess, characterTranslateX)
 
 	glPopMatrix()
 
