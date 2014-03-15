@@ -13,22 +13,28 @@ import sys
 
 from shaders import *
 from textures import *
-from controls import *
+import controls
+import road
+import star_background
 
 # Window Dimensions
 screenW = 960
 screenH = 960
 
 # Direction + Color of Light
+numLights = 1
 lightColor = numpy.array([0.9,0.9,0.9,1], numpy.float32)
-lightPosn = numpy.array([0.5, 0.5, -1, 0], numpy.float32)
+lightPosn = numpy.array([0, 0, 2, 0], numpy.float32)
 
 # Camera Parameters
 visField = 85
 
+# Global textures
+starrySkyTex = None
+
 def initGL(w, h):
-	global program
-	glClearColor(0.5,0.5,0.5,1)
+	global program, starrySkyTex
+	glClearColor(0.0,0.0,0.0,1)
 	glClearDepth(1.0)
 	glDepthFunc(GL_LESS)
 	glEnable(GL_DEPTH_TEST)
@@ -39,6 +45,8 @@ def initGL(w, h):
 	gluPerspective(visField, float(w)/float(h), 0.1, 700.0)
 	glMatrixMode(GL_MODELVIEW)
 	glEnable(GL_DEPTH_TEST)
+
+	starrySkyTex = loadTexture("images/starry_sky.png")
 
 	if not glUseProgram:
 		print 'Missing Shader Objects!'
@@ -67,15 +75,12 @@ def glutPrint(x, y, font, text, r, g, b):
 def display():
 	global program
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
-
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-	glLoadIdentity()
 
-	gluLookAt(-3,0,0, 0, 0, 0, 0, 0, 1)
+	gluLookAt(-3,0,1.5, 0, 0, 0, 0, 0, 1)
 
 	ambient = glGetUniformLocation(program, "ambient")
 	diffuse = glGetUniformLocation(program, "diffuse")
@@ -86,7 +91,7 @@ def display():
 	enablelighting = glGetUniformLocation(program, "enablelighting")
 	glUniform1f(enablelighting, 1)
 	numused = glGetUniformLocation(program, "numused")
-	glUniform1i(numused, 1)
+	glUniform1i(numused, numLights)
 	lightposn = glGetUniformLocation(program, "lightposn")
 	glUniform4fv(lightposn, 1, lightPosn)
 	lightcol = glGetUniformLocation(program, "lightcolor")
@@ -99,7 +104,10 @@ def display():
 	glUniform4fv(specular, 1, numpy.array([0.5, 0.5, 0.5, 1.0], numpy.float32))
 	glUniform1f(shininess, 1)
 
-	glutSolidSphere(1,20,20)
+	isTex = glGetUniformLocation(program, "isTex")
+
+	star_background.display(starrySkyTex, isTex)
+	road.display(ambient, diffuse, specular, emission, shininess)
 
 	glPopMatrix()
 
