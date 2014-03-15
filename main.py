@@ -28,7 +28,7 @@ visField = 85
 
 def initGL(w, h):
 	global grassTex, platformTex, program
-	glClearColor(skyR, skyG, skyB, skyA)
+	glClearColor(0,0,0,0)
 	glClearDepth(1.0)
 	glDepthFunc(GL_LESS)
 	glEnable(GL_DEPTH_TEST)
@@ -68,7 +68,7 @@ def glutPrint(x, y, font, text, r, g, b):
 		glutBitmapCharacter(font, ord(ch))
 
 def display():
-	global program, x, y, z, qx, qy, qz, qw, t, camera_degrees
+	global program
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
 
@@ -79,8 +79,14 @@ def display():
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 	glLoadIdentity()
 
-	gluLookAt(-5*zoom*cos(radians(camera_degrees)) + x, 5*zoom*sin(radians(camera_degrees)) + y, -2*zoom + z, x, y, z, 0, 0, -1)
-	
+	gluLookAt(1,0,0, 0, 0, 0, 0, 0, -1)
+
+	ambient = glGetUniformLocation(program, "ambient")
+	diffuse = glGetUniformLocation(program, "diffuse")
+	specular = glGetUniformLocation(program, "specular")
+	emission = glGetUniformLocation(program, "emission")
+	shininess = glGetUniformLocation(program, "shininess")
+
 	enablelighting = glGetUniformLocation(program, "enablelighting")
 	glUniform1f(enablelighting, 1)
 	numused = glGetUniformLocation(program, "numused")
@@ -92,90 +98,40 @@ def display():
 
 	isTex = glGetUniformLocation(program, "isTex")
 	glUniform1i(isTex, 1)
-	createGround(grassTex, params["z_start"])
-	createPlatform(platformTex, params["z_start"])
+	# some tex files
+	#createGround(grassTex, params["z_start"])
+	#createPlatform(platformTex, params["z_start"])
 	glUniform1i(isTex, 0)
 
-	data = [x, y, z, qx, qy, qz, qw]
-	createHelicopter(program, data)
-	animateHelicopter(helicopterTime, pause)
+	glPushMatrix()
+	glUniform4fv(ambient, 1, numpy.array([0.3, 0.3, 0.4, 1.0], numpy.float32))
+	glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 1.0], numpy.float32))
+	glUniform4fv(diffuse, 1, numpy.array([0.2, 0.2, 0.5, 1.0], numpy.float32))
+	glUniform4fv(specular, 1, numpy.array([0.5, 0.5, 0.5, 1.0], numpy.float32))
+
+	glutSolidSphere(1,20,20)
+
+	glPopMatrix()
+
 	glutSwapBuffers()
 
 #keyHash is a parameter in controls.py
 def keyPressed(*args):
-	global camera_degrees, zoom, speed, pause
-	if args[0].lower() == keyHash['quit']:
+	if args[0].lower() == 'q':
 		sys.exit()
-	if args[0].lower() == keyHash['left']:
-		camera_degrees -= 3
-	if args[0].lower() == keyHash['right']:
-		camera_degrees += 3
-	if args[0].lower() == keyHash['zoomout']:
-		zoom += 0.02
-		if zoom > max_zoom: zoom = max_zoom
-	if args[0].lower() == keyHash['zoomin']:
-		zoom -= 0.02
-		if zoom < min_zoom: zoom = min_zoom
-	if args[0].lower() == keyHash['speed']:
-		speed = (2*speed) % 31
-	if args[0].lower() == keyHash['help']:
-		printHelp()
-	if args[0].lower() == keyHash['pause']:
-		pause = not pause
+
 
 def idleFunc():
 	glutPostRedisplay()
 
 def main():
-	global datafile, zoom, max_zoom, min_zoom
-
+	global datafile
 	glutInit(sys.argv[0:1])
-
-	if len(sys.argv) == 1:
-		print "You must specify a file as input data for the visualizer. The command is: python main.py -f <filename> -p <params_filename>."
-		exit(1)
-
-	i = 1
-	while i < len(sys.argv):
-		paramsfilename = "default_params.txt"
-		if sys.argv[i] == "-f" :
-			try:
-				datafilename = sys.argv[i+1]
-				datafile = open(datafilename)
-			except IndexError:
-				print "You must specify a file as input data for the visualizer. The command is: python main.py -f <filename> -p <params_filename>."
-				exit(1)
-			except IOError:
-				print "Unable to open file: " + sys.argv[i+1] + "."
-				exit(1)
-		elif sys.argv[i] == "-p" :
-			try:
-				paramsfilename = sys.argv[i+1]
-				tmpFile = open(paramsfilename)
-				tmpFile.close()
-			except IndexError:
-				print "You must specify a params file as the parameter for the -p flag. The command is: python main.py -f <filename> -p <params_filename>."
-				exit(1)
-			except IOError:
-				print "Unable to open file: " + sys.argv[i+1] + "."
-				exit(1)
-		else:
-			print "Illegal flag option; only -f <filename> and -p <params_filename> allowed."
-			exit(1)
-		i += 2
-
-	print "Opened flight data file: " + datafilename + "."
-	print "Opened params file: " + paramsfilename + "."
-	print ""
-	parseParams(paramsfilename)
-
-	loadKeys()
-	printHelp()
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 	glutInitWindowSize(screenW, screenH)
 	glutInitWindowPosition(0, 0)
-	window = glutCreateWindow("Helicopter Visualization")
+	window = glutCreateWindow("Wearable Temple Run")
 
 	glutDisplayFunc(display)
 	glutIdleFunc(idleFunc)
