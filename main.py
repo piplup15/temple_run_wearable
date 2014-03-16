@@ -18,6 +18,7 @@ import road
 import mapGrid
 import star_background
 import planets
+import character
 
 # Window Dimensions
 screenW = 960
@@ -39,11 +40,10 @@ ROWS = 25
 COLUMNS = 3
 mapG = None
 
-# Character Parameters
-characterTranslateX = 0.0
+char = None
 
 def initGL(w, h):
-	global program, starrySkyTex, mapG
+	global program, starrySkyTex, mapG, char
 	glClearColor(0.0,0.0,0.0,1)
 	glClearDepth(1.0)
 	glDepthFunc(GL_LESS)
@@ -58,6 +58,7 @@ def initGL(w, h):
 
 	starrySkyTex = loadTexture("images/starry_sky.png")
 	mapG = mapGrid.MapGrid(ROWS, COLUMNS)
+	char = character.Character(mapG)
 
 	if not glUseProgram:
 		print 'Missing Shader Objects!'
@@ -84,14 +85,14 @@ def glutPrint(x, y, font, text, r, g, b):
 		glutBitmapCharacter(font, ord(ch))
 
 def display():
-	global program, characterTranslateX
+	global program
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-	gluLookAt(-1+characterTranslateX,0,0.5, 0+characterTranslateX, 0, 0, 0, 0, 1)
+	gluLookAt(-0.3+char.distXTraveled,0,0.5, 0+char.distXTraveled+1, 0, 0, 0, 0, 1)
 
 	ambient = glGetUniformLocation(program, "ambient")
 	diffuse = glGetUniformLocation(program, "diffuse")
@@ -117,23 +118,29 @@ def display():
 
 	isTex = glGetUniformLocation(program, "isTex")
 
-	#below is temporary to see road movement
-	characterTranslateX += 0.1
-
 	#print time.time()
 
-	star_background.display(starrySkyTex, isTex, characterTranslateX)
-	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, characterTranslateX)
-	planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, characterTranslateX)
-
+	star_background.display(starrySkyTex, isTex, char.distXTraveled)
+	char.update()
+	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, char.distXTraveled)
+	planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, char.distXTraveled)
+	char.draw(ambient,diffuse,specular,emission,shininess)	
 	glPopMatrix()
 
 	glutSwapBuffers()
 
 #keyHash is a parameter in controls.py
 def keyPressed(*args):
+	global character
 	if args[0].lower() == 'q':
 		sys.exit()
+	if args[0].lower() == 'j':
+		char.updateComm('left')
+	if args[0].lower() == 'k':
+		char.updateComm('right')
+	if args[0].lower() == 'v':
+		char.updateComm('jump')
+
 
 
 def idleFunc():

@@ -51,6 +51,7 @@ class MapGrid():
 			self.mapGrid[newrow] = []
 			for col in range(self.numColumns):
 				self.mapGrid[newrow].append(1)
+		#self.spawnSpikes((numberRows+1)/2, self.lastRow+1, self.lastRow+1+numberRows)
 		self.lastRow += numberRows
 
 	def depthFirstSearch(self, startPos, endPos):
@@ -91,3 +92,12 @@ class MapGrid():
 			else:
 				done = True
 		self.firstRow += count
+
+	def spawnSpikes(self, number, lower, upper):
+		while number > 0:
+			row = int((upper-lower)*random.random()) + lower
+			col = int(random.random()*3)
+			if row-1 not in self.mapGrid.keys() or self.mapGrid[row-1][col] != 2:
+				if row+1 not in self.mapGrid.keys() or self.mapGrid[row+1][col] != 2:
+					self.mapGrid[row][col] = 2
+					number -= 1

@@ -51,14 +51,21 @@ def display(ambient, diffuse, specular, emission, shininess, rows, columns, mapG
 		glUniform4fv(specular, 1, numpy.array([r, g, b, 0.3], numpy.float32))
 		glUniform1f(shininess, 1)
 		for j in range(0, columns):
-			if mapG.mapGrid[i][j] == 1:
+			if mapG.mapGrid[i][j] >= 1:
 				glPushMatrix()
 				glTranslatef(-1 + i,0.2*(-((columns-1)/2)+j),0)
 				glScalef(1,0.195,0.2)
 				glTranslatef(0.5, 0, 0)
 				glutSolidCube(1)
 				glPopMatrix()
-
+			"""if mapG.mapGrid[i][j] == 2:
+				drawSpike(i,j, columns, ambient, diffuse, specular, emission, shininess)
+				glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 0.3], numpy.float32))
+				glUniform4fv(ambient, 1, numpy.array([r, g, b, 0.3], numpy.float32))
+				glUniform4fv(diffuse, 1, numpy.array([r, g, b, 0.3], numpy.float32))
+				glUniform4fv(specular, 1, numpy.array([r, g, b, 0.3], numpy.float32))
+				glUniform1f(shininess, 1)
+			"""
 		if (i % 5 == 0):
 			glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 0.3], numpy.float32))
 			glUniform4fv(ambient, 1, numpy.array([gateColor, gateColor, 0.2, 0.3], numpy.float32))
@@ -119,3 +126,16 @@ def display(ambient, diffuse, specular, emission, shininess, rows, columns, mapG
 		glTranslate(0.5,0,0)
 		glutSolidCube(1)
 		glPopMatrix()
+
+def drawSpike(i, j, columns, ambient, diffuse, specular, emission, shininess):
+	glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 0.4], numpy.float32))
+	glUniform4fv(ambient, 1, numpy.array([0.3, 0.3, 0.3, 0.4], numpy.float32))
+	glUniform4fv(diffuse, 1, numpy.array([0.3, 0.3, 0.3, 0.4], numpy.float32))
+	glUniform4fv(specular, 1, numpy.array([0.3, 0.3, 0.3, 0.4], numpy.float32))
+	glUniform1f(shininess, 1)
+	glPushMatrix()
+	glTranslatef(-0.5 + i,0.2*(-((columns-1)/2)+j),0.1)
+	glutSolidSphere(0.08, 20, 20)
+	quadric = gluNewQuadric()
+	gluCylinder(quadric, 0.03, 0, 0.15, 10, 10)
+	glPopMatrix()

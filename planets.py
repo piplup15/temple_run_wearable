@@ -49,7 +49,6 @@ planets = []
 cooldowns = {'L':0, 'R':0}
 def drawPlanetLoop(ambient, diffuse, specular, emission, shininess, characterTransformX):
 	cleanup(characterTransformX)
-	print len(planets)
 	for planet in planets:
 		planet.update()
 		planet.drawPlanet(ambient, diffuse, specular, emission, shininess, )
