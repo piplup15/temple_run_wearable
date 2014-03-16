@@ -16,8 +16,6 @@ class MapGrid():
 		self.cleanup(currentRow)
 		columnBegin = int(random.random()*self.numColumns)
 		columnEnd = int(random.random()*self.numColumns)
-		print columnBegin
-		print columnEnd
 		path = self.depthFirstSearch((self.lastRow+1, columnBegin), (self.lastRow+numberRows, columnEnd))
 		for newrow in range(self.lastRow+1, self.lastRow+1+numberRows):
 			self.mapGrid[newrow] = []
@@ -29,6 +27,23 @@ class MapGrid():
 		self.lastRow += numberRows
 		numStraight = int(random.random()*10) + 5
 		self.addAllBlocks(numStraight, currentRow)
+
+	# for now, assume 3 rows
+	def addFigureEightPath(self, numTimes, currentRow):
+		self.cleanup(currentRow)
+		index = 0
+		for newrow in range(self.lastRow+1, self.lastRow+1+numTimes*5):
+			if (index % 5) == 0 or (index % 5) == 4:
+				self.mapGrid[newrow] = [0,1,0]
+			elif (index % 5) == 1 or (index % 5) == 3:
+				self.mapGrid[newrow] = [1,1,1]
+			else:
+				self.mapGrid[newrow] = [1,0,1]
+			index += 1
+		self.lastRow += numTimes*5
+		numStraight = int(random.random()*10) + 5
+		self.addAllBlocks(numStraight, currentRow)
+
 
 	def addAllBlocks(self, numberRows, currentRow):
 		self.cleanup(currentRow)

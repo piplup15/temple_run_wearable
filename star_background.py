@@ -36,24 +36,24 @@ def display(starrySkyTex, isTex, characterTranslateX):
 	glEnd()
 
 	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize, boxSize, -boxSize)
-	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(-boxSize, boxSize, boxSize)
-	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize, boxSize, boxSize)
-	glTexCoord2f(0.0, 0.0); glVertex3f(boxSize, boxSize, -boxSize)
+	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize + characterTranslateX, boxSize, -boxSize)
+	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(-boxSize + characterTranslateX, boxSize, boxSize)
+	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize + characterTranslateX, boxSize, boxSize)
+	glTexCoord2f(0.0, 0.0); glVertex3f(boxSize + characterTranslateX, boxSize, -boxSize)
 	glEnd()
 
 	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize, -boxSize, -boxSize)
-	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(-boxSize, -boxSize, boxSize)
-	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize, -boxSize, boxSize)
-	glTexCoord2f(0.0, 0.0); glVertex3f(boxSize, -boxSize, -boxSize)
+	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize + characterTranslateX, -boxSize, -boxSize)
+	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(-boxSize + characterTranslateX, -boxSize, boxSize)
+	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize + characterTranslateX, -boxSize, boxSize)
+	glTexCoord2f(0.0, 0.0); glVertex3f(boxSize + characterTranslateX, -boxSize, -boxSize)
 	glEnd()
 
 	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize, -boxSize, -boxSize)
-	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(boxSize, -boxSize, -boxSize)
-	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize, boxSize, -boxSize)
-	glTexCoord2f(0.0, 0.0); glVertex3f(-boxSize, boxSize, -boxSize)
+	glTexCoord2f(0.0, textureRepeatSize); glVertex3f(-boxSize + characterTranslateX, -boxSize, -boxSize)
+	glTexCoord2f(textureRepeatSize, textureRepeatSize); glVertex3f(boxSize + characterTranslateX, -boxSize, -boxSize)
+	glTexCoord2f(textureRepeatSize, 0.0); glVertex3f(boxSize + characterTranslateX, boxSize, -boxSize)
+	glTexCoord2f(0.0, 0.0); glVertex3f(-boxSize + characterTranslateX, boxSize, -boxSize)
 	glEnd()
 
 	glDisable(GL_TEXTURE_2D)

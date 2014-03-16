@@ -17,6 +17,7 @@ import controls
 import road
 import mapGrid
 import star_background
+import planets
 
 # Window Dimensions
 screenW = 960
@@ -123,6 +124,7 @@ def display():
 
 	star_background.display(starrySkyTex, isTex, characterTranslateX)
 	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, characterTranslateX)
+	planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, characterTranslateX)
 
 	glPopMatrix()
 
