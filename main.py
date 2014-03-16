@@ -41,9 +41,19 @@ COLUMNS = 3
 mapG = None
 
 char = None
+speed = 0.1
+speed_update = 0.1 
+
+currentTime = None
+score = 0
+
+textHash = None
+shouldDisplaySpeedMessage = False
+speedTextSequenceIndex = 0
+speedTextHash = {}
 
 def initGL(w, h):
-	global program, starrySkyTex, mapG, char
+	global program, starrySkyTex, mapG, char, currentTime, textHash
 	glClearColor(0.0,0.0,0.0,1)
 	glClearDepth(1.0)
 	glDepthFunc(GL_LESS)
@@ -59,6 +69,11 @@ def initGL(w, h):
 	starrySkyTex = loadTexture("images/starry_sky.png")
 	mapG = mapGrid.MapGrid(ROWS, COLUMNS)
 	char = character.Character(mapG)
+	currentTime = time.time()
+
+	textHash = loadFont()
+	loadSpeedTextHash()
+	## TEMP
 
 	if not glUseProgram:
 		print 'Missing Shader Objects!'
@@ -68,8 +83,8 @@ def initGL(w, h):
 
 def resize(w, h):
 	global screenW, screenH
-	if h < 400:  h = 400
-	if w < 400:  w = 400
+	if h < 700:  h = 700
+	if w < 700:  w = 700
 	screenW = w
 	screenH = h
 	glViewport(0, 0, w, h)
@@ -77,22 +92,41 @@ def resize(w, h):
 	glLoadIdentity()
 	gluPerspective(visField, float(w)/float(h), 0.1, 700.0)
 	glMatrixMode(GL_MODELVIEW)
- 
-def glutPrint(x, y, font, text, r, g, b):
-	glColor3f(r,g,b)
-	glRasterPos2f(x,y)
-	for ch in text:
-		glutBitmapCharacter(font, ord(ch))
 
 def display():
-	global program
+	global program, currentTime, score, screenH, screenW, speed, speed_update, shouldDisplaySpeedMessage
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-	glMatrixMode(GL_MODELVIEW)
-	glLoadIdentity()
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+	glMatrixMode(GL_MODELVIEW)
+	glLoadIdentity()
 
-	gluLookAt(-0.3+char.distXTraveled,0,0.5, 0+char.distXTraveled+1, 0, 0, 0, 0, 1)
+	glMatrixMode(GL_PROJECTION)
+	glPushMatrix()
+	glLoadIdentity()
+	gluOrtho2D(0.0, screenW, 0.0, screenH)
+	drawText(score)
+	displaySpeedMessage()
+	glPopMatrix()
+
+	glMatrixMode(GL_MODELVIEW)
+	glLoadIdentity()
+
+	# aim for about 30 fps
+	if (currentTime + 0.03 < time.time()):
+		if speed != speed_update:
+			speed = min(speed + 0.01, speed_update)
+		char.update(speed)
+		print char.distXTraveled
+		if char.lastHundred < int(char.distXTraveled/(speed*10)) /100:
+			char.lastHundred = int(char.distXTraveled/(speed*10)) /100
+			speed_update = speed_update + 0.02
+			shouldDisplaySpeedMessage = True
+		currentTime = time.time()
+		if not char.stopAnimation:
+			score += 10
+
+	gluLookAt(-0.3+char.distXTraveled,0,0.7, 0+char.distXTraveled+1, 0, 0, 0, 0, 1)
 
 	ambient = glGetUniformLocation(program, "ambient")
 	diffuse = glGetUniformLocation(program, "diffuse")
@@ -118,16 +152,102 @@ def display():
 
 	isTex = glGetUniformLocation(program, "isTex")
 
-	#print time.time()
-
 	star_background.display(starrySkyTex, isTex, char.distXTraveled)
-	char.update()
+
+
 	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, char.distXTraveled)
-	planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, char.distXTraveled)
+	planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, char.distXTraveled, speed)
 	char.draw(ambient,diffuse,specular,emission,shininess)	
 	glPopMatrix()
 
 	glutSwapBuffers()
+
+def drawText(score):
+	global textHash
+	val = score
+	digits = []
+	numDigits = 8
+	isTex = glGetUniformLocation(program, "isTex")
+	glUniform1i(isTex, 1)
+	glEnable(GL_TEXTURE_2D)
+
+	xIndex = 20
+
+	for i in ['S','C','O','R','E',' ']:
+		id = textHash[i]
+		setupTex(id)
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+48, screenH-68)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-68)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH-20)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+48, screenH-20)
+		glEnd()
+
+		xIndex += 48
+
+	for i in range(0,numDigits+1):
+		digits.append(val % 10)
+		val = val / 10
+
+	digits.reverse()
+	for digit in digits:
+		id = textHash[str(digit)]
+		setupTex(id)
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+48, screenH-68)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-68)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH-20)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+48, screenH-20)
+		glEnd()
+
+		xIndex += 48
+
+	glDisable(GL_TEXTURE_2D)
+	glUniform1i(isTex, 0)
+
+def setupTex(id):
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) 
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT) 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT) 
+	glBindTexture(GL_TEXTURE_2D, id)
+
+def displaySpeedMessage():
+	global shouldDisplaySpeedMessage, speedTextHash, speedTextSequenceIndex
+	if shouldDisplaySpeedMessage:
+		isTex = glGetUniformLocation(program, "isTex")
+		glUniform1i(isTex, 1)
+		glEnable(GL_TEXTURE_2D)
+		startY = speedTextHash[speedTextSequenceIndex]
+		yIndex = 0
+		for char in 'FASTER...':
+			id = textHash['g'+char]
+			setupTex(id)
+
+			glBegin(GL_QUADS);
+			glTexCoord2f(1.0, 0.0); glVertex2f(screenW-10, startY-48-yIndex)
+			glTexCoord2f(1.0, 1.0); glVertex2f(screenW-58, startY-48-yIndex)
+			glTexCoord2f(0.0, 1.0); glVertex2f(screenW-58, startY-yIndex)
+			glTexCoord2f(0.0, 0.0); glVertex2f(screenW-10, startY-yIndex)
+			glEnd()
+			yIndex += 48
+
+		glDisable(GL_TEXTURE_2D)
+		glUniform1i(isTex, 0)
+		speedTextSequenceIndex += 1
+		if speedTextSequenceIndex not in speedTextHash.keys():
+			shouldDisplaySpeedMessage = False
+			speedTextSequenceIndex = 0
+
+def loadSpeedTextHash():
+	for i in range(0,10):
+		speedTextHash[i] = (screenH*3/4)*i/10
+	for i in range(0,100):
+		speedTextHash[i+10] = screenH*3/4
+	for i in range(0,10):
+		speedTextHash[i+110] = (screenH*3/4) + (screenH*3/4)*i/10
 
 #keyHash is a parameter in controls.py
 def keyPressed(*args):

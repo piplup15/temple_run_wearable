@@ -24,6 +24,7 @@ class MapGrid():
 					self.mapGrid[newrow].append(1)
 				else:
 					self.mapGrid[newrow].append(0)
+		self.verifySShape(self.lastRow+2,self.lastRow+numberRows-1)
 		self.lastRow += numberRows
 		numStraight = int(random.random()*10) + 5
 		self.addAllBlocks(numStraight, currentRow)
@@ -92,6 +93,14 @@ class MapGrid():
 			else:
 				done = True
 		self.firstRow += count
+
+	def verifySShape(self, initialRow, finalRow):
+		for row in range(initialRow, finalRow+1):
+			if self.mapGrid[row] == [1,1,1]:
+				if (self.mapGrid[row-1] == [0,0,1] and self.mapGrid[row+1] == [1,0,0]):
+					self.mapGrid[row+1] = [1,1,0]
+				elif (self.mapGrid[row-1] == [1,0,0] and self.mapGrid[row+1] == [0,0,1]):
+					self.mapGrid[row+1] = [0,1,1]
 
 	def spawnSpikes(self, number, lower, upper):
 		while number > 0:

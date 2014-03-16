@@ -22,7 +22,7 @@ class Planet():
 		self.color = color
 		self.tilt = tilt
 
-	def drawPlanet(self,ambient, diffuse, specular, emission, shininess, ):
+	def drawPlanet(self,ambient, diffuse, specular, emission, shininess):
 		glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 0.3], numpy.float32))
 		glUniform4fv(ambient, 1, numpy.array(self.color, numpy.float32))
 		glUniform4fv(diffuse, 1, numpy.array(self.color, numpy.float32))
@@ -40,18 +40,18 @@ class Planet():
 			gluDisk(quadric, 1.2, 2, 50, 50)
 		glPopMatrix()
 
-	def update(self):
+	def update(self, speed):
 		x,y,z = self.location
-		self.location = (x-1, y, z)
+		self.location = (x-10*speed, y, z)
 
 
 planets = []
 cooldowns = {'L':0, 'R':0}
-def drawPlanetLoop(ambient, diffuse, specular, emission, shininess, characterTransformX):
+def drawPlanetLoop(ambient, diffuse, specular, emission, shininess, characterTransformX, speed):
 	cleanup(characterTransformX)
 	for planet in planets:
-		planet.update()
-		planet.drawPlanet(ambient, diffuse, specular, emission, shininess, )
+		planet.update(speed)
+		planet.drawPlanet(ambient, diffuse, specular, emission, shininess)
 	if not cooldowns['L']:
 		spawn('L', characterTransformX)
 	if not cooldowns['R']:

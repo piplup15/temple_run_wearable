@@ -41,36 +41,40 @@ class Character():
 		self.velocityZ = 0
 		self.mapGrid = mapGrid
 		self.command = []
-		self.targetCol = None
+		self.targetCol = 0
+		self.lastHundred = 0
+		self.stopAnimation = False
 
 	def draw(self, ambient, diffuse, specular, emission, shininess):
 		global rotaterightleg, rotateleftleg, stp, lstp, rotaterightarmtop, rotateleftarm, ratop, latop
 		
 		glPushMatrix()
 
-		if (rotaterightleg > 15):
-			stp = -3.5
-		if (rotaterightleg < -15):
-			stp = 3.5
+		if not self.stopAnimation:
 
-		if (rotateleftleg < -15):
-			lstp = 3.5
-		if (rotateleftleg > 15):
-			lstp = -3.5
-		rotateleftleg += lstp	
-		rotaterightleg += stp
+			if (rotaterightleg > 15):
+				stp = -3.5
+			if (rotaterightleg < -15):
+				stp = 3.5
 
-		if (rotaterightarmtop > 25):
-			ratop = -5.5
-		if (rotaterightarmtop < -25):
-			ratop = 5.5
-		if (rotateleftarm < -25):
-			latop = 5.5
-		if (rotateleftarm > 25):
-			latop = -5.5
+			if (rotateleftleg < -15):
+				lstp = 3.5
+			if (rotateleftleg > 15):
+				lstp = -3.5
+			rotateleftleg += lstp	
+			rotaterightleg += stp
 
-		rotaterightarmtop += ratop
-		rotateleftarm += latop
+			if (rotaterightarmtop > 25):
+				ratop = -5.5
+			if (rotaterightarmtop < -25):
+				ratop = 5.5
+			if (rotateleftarm < -25):
+				latop = 5.5
+			if (rotateleftarm > 25):
+				latop = -5.5
+
+			rotaterightarmtop += ratop
+			rotateleftarm += latop
 
 		glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 0.4], numpy.float32))
 		glUniform4fv(ambient, 1, numpy.array([0.3, 0.3, 0.8, 0.4], numpy.float32))
@@ -192,35 +196,40 @@ class Character():
 		valid = valid or (len(self.command) > 0 and "jump" in self.command and param != "jump")
 		valid = valid or (len(self.command) > 0 and "right" in self.command and param == "jump")
 		valid = valid or (len(self.command) > 0 and "left" in self.command and param == "jump")
-		if valid:
+		if valid and len(self.command) <= 1:
 			if param == 'left':
 				if 'left' not in self.command:
 					self.command += ['left']
-				self.targetCol = min(1, self.column+1)
+					self.targetCol = min(1, self.column+1)
 			if param == 'right':
 				if 'right' not in self.command:
 					self.command += ['right']
-				self.targetCol = max(-1, self.column-1)
+					self.targetCol = max(-1, self.column-1)
 			if param == 'jump':
 				if 'jump' not in self.command:
 					self.command += ['jump']
-				self.velocityZ = 0.04
-				self.positionZ += self.velocityZ 
+					self.velocityZ = 0.04
+					self.positionZ += self.velocityZ 
 
-	def update(self):
-		print self.command
+	def update(self,speed):
 		if len(self.command) > 0 and 'jump' in self.command:
 			self.velocityZ -= 0.005
 			self.positionZ += self.velocityZ
 			print self.positionZ
 			if abs(self.positionZ - 0) < 0.001:
-				self.positionZ = 0
-				self.velocityZ = 0
-				self.command.remove("jump")
-		elif self.positionZ != 0 or (self.positionZ == 0 and self.mapGrid.mapGrid[int(self.distXTraveled+1)][self.column+1] == 0 and len(self.command) == 0):
-			self.velocityZ -= 0.01
-			self.positionZ += self.velocityZ
-			self.command = ["fall"]
+				conditions = self.mapGrid.mapGrid[int(self.distXTraveled+1)][self.column+1] == 0
+				conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+1)][self.targetCol+1] == 0
+				conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+1.1)][self.column+1] == 0 
+				conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+1.1)][self.targetCol+1] == 0
+				conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+0.9)][self.column+1] == 0 
+				conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+0.9)][self.targetCol+1] == 0 
+				if conditions:
+					self.command = ['fall']
+					self.stopAnimation = True
+				else:
+					self.positionZ = 0
+					self.velocityZ = 0
+					self.command.remove("jump")
 		if len(self.command) > 0 and 'left' in self.command:
 			self.positionY = min(self.targetCol, self.positionY + 0.25)
 			if self.positionY == self.targetCol:
@@ -231,5 +240,19 @@ class Character():
 			if self.positionY == self.targetCol:
 				self.column = self.targetCol
 				self.command.remove("right")
-		self.distXTraveled += 0.1
-		self.positionZ += self.velocityZ
+		valid = self.command == ["fall"] 
+		valid = valid or (abs(self.positionZ - 0) > 0.001 and self.positionZ < 0) 
+		conditions = self.mapGrid.mapGrid[int(self.distXTraveled+1)][self.column+1] == 0
+		conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+1)][self.targetCol+1] == 0
+		conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+1.1)][self.column+1] == 0 
+		conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+1.1)][self.targetCol+1] == 0
+		conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+0.9)][self.column+1] == 0 
+		conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+0.9)][self.targetCol+1] == 0 
+		valid = valid or (abs(self.positionZ - 0) < 0.001 and conditions)
+		if valid:
+			self.velocityZ -= 0.005
+			self.positionZ += self.velocityZ
+			self.command = ["fall"]
+			self.stopAnimation = True
+		if not self.stopAnimation:
+			self.distXTraveled += speed
