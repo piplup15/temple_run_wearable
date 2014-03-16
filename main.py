@@ -171,17 +171,17 @@ def drawText(score):
 	glUniform1i(isTex, 1)
 	glEnable(GL_TEXTURE_2D)
 
-	xIndex = 20
+	xIndex = 0
 
 	for i in ['S','C','O','R','E',' ']:
 		id = textHash[i]
 		setupTex(id)
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+48, screenH-68)
-		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-68)
-		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH-20)
-		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+48, screenH-20)
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+48, screenH-48)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-48)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+48, screenH)
 		glEnd()
 
 		xIndex += 48
@@ -196,10 +196,10 @@ def drawText(score):
 		setupTex(id)
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+48, screenH-68)
-		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-68)
-		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH-20)
-		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+48, screenH-20)
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+48, screenH-48)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-48)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+48, screenH)
 		glEnd()
 
 		xIndex += 48
