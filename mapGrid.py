@@ -1,4 +1,5 @@
 import random
+import diamond
 
 class MapGrid():
 	def __init__(self, rows, columns):
@@ -11,6 +12,7 @@ class MapGrid():
 		self.numColumns = columns
 		self.firstRow = 0
 		self.lastRow = row
+		self.diamondMap= dict()
 
 	def addRandomPath(self, numberRows, currentRow):
 		self.cleanup(currentRow)
@@ -25,6 +27,7 @@ class MapGrid():
 				else:
 					self.mapGrid[newrow].append(0)
 		self.verifySShape(self.lastRow+2,self.lastRow+numberRows-1)
+		self.addDiamonds(self.lastRow+1, self.lastRow+numberRows)
 		self.lastRow += numberRows
 		numStraight = int(random.random()*10) + 5
 		self.addAllBlocks(numStraight, currentRow)
@@ -41,6 +44,7 @@ class MapGrid():
 			else:
 				self.mapGrid[newrow] = [1,0,1]
 			index += 1
+		self.addDiamonds(self.lastRow+1, self.lastRow+numTimes*5)
 		self.lastRow += numTimes*5
 		numStraight = int(random.random()*10) + 5
 		self.addAllBlocks(numStraight, currentRow)
@@ -53,7 +57,20 @@ class MapGrid():
 			for col in range(self.numColumns):
 				self.mapGrid[newrow].append(1)
 		#self.spawnSpikes((numberRows+1)/2, self.lastRow+1, self.lastRow+1+numberRows)
+		self.addDiamonds(self.lastRow+1, self.lastRow+numberRows)
 		self.lastRow += numberRows
+
+	def addDiamonds(self, beginRow, endRow):
+		for row in range(beginRow, endRow+1):
+			putDiamond = random.random() > 0.5
+			possibleDiamondLocations = []
+			if putDiamond:
+				for index in range(0,3):
+					if self.mapGrid[row][index] == 1:
+						possibleDiamondLocations.append(index)
+				if len(possibleDiamondLocations) != 0:
+					random.shuffle(possibleDiamondLocations)
+					self.diamondMap[row] = diamond.Diamond(row, possibleDiamondLocations[0])
 
 	def depthFirstSearch(self, startPos, endPos):
 		boundsX = [startPos[0], endPos[0]]
@@ -89,6 +106,8 @@ class MapGrid():
 		while not done:
 			if row + count + 2 < currentRow:
 				del self.mapGrid[row+count]
+				if row in self.diamondMap.keys():
+					del self.diamondMap[row]
 				count += 1
 			else:
 				done = True

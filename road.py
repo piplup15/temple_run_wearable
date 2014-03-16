@@ -27,7 +27,7 @@ gateLow = 0.5
 gateHigh = 1.0
 gateDirection = 1
 
-def display(ambient, diffuse, specular, emission, shininess, rows, columns, mapG, characterTranslate):
+def display(ambient, diffuse, specular, emission, shininess, rows, columns, mapG, characterTranslate, updateOkay):
 	global gateColor, gateLow, gateHigh, gateDirection
 	if int(characterTranslate + rows) not in mapG.mapGrid.keys():
 		if random.random() > 0.15:
@@ -66,6 +66,14 @@ def display(ambient, diffuse, specular, emission, shininess, rows, columns, mapG
 				glUniform4fv(specular, 1, numpy.array([r, g, b, 0.3], numpy.float32))
 				glUniform1f(shininess, 1)
 			"""
+
+		if i in mapG.diamondMap.keys():
+			diamond = mapG.diamondMap[i]
+			if updateOkay:
+				diamond.update()
+			diamond.draw(ambient, diffuse, specular, emission, shininess)
+
+
 		if (i % 5 == 0):
 			glUniform4fv(emission, 1, numpy.array([0.0, 0.0, 0.0, 0.3], numpy.float32))
 			glUniform4fv(ambient, 1, numpy.array([gateColor, gateColor, 0.2, 0.3], numpy.float32))

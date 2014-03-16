@@ -13,6 +13,8 @@ import numpy
 import time
 import sys
 import random
+import pyglet
+import os
 
 transx = 0
 transy = 0
@@ -36,7 +38,7 @@ class Character():
 	def __init__(self, mapGrid):
 		self.positionZ = 0
 		self.positionY = 0
-		self.distXTraveled = 0.5
+		self.distXTraveled = 0
 		self.column = 0
 		self.velocityZ = 0
 		self.mapGrid = mapGrid
@@ -211,11 +213,20 @@ class Character():
 					self.velocityZ = 0.04
 					self.positionZ += self.velocityZ 
 
+	def checkForDiamondCollision(self):
+		if int(self.distXTraveled)+1 in self.mapGrid.diamondMap.keys():
+			diamond = self.mapGrid.diamondMap[int(self.distXTraveled)+1]
+			if self.distXTraveled - int(self.distXTraveled) >= 0.4 and self.distXTraveled - int(self.distXTraveled) <= 0.6:
+				if diamond.column-1 == self.column or diamond.column-1 == self.targetCol:
+					score = diamond.value
+					del self.mapGrid.diamondMap[int(self.distXTraveled)+1]
+					return score
+		return 0
+
 	def update(self,speed):
 		if len(self.command) > 0 and 'jump' in self.command:
 			self.velocityZ -= 0.005
 			self.positionZ += self.velocityZ
-			print self.positionZ
 			if abs(self.positionZ - 0) < 0.001:
 				conditions = self.mapGrid.mapGrid[int(self.distXTraveled+1)][self.column+1] == 0
 				conditions = conditions and self.mapGrid.mapGrid[int(self.distXTraveled+1)][self.targetCol+1] == 0

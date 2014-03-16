@@ -19,10 +19,22 @@ import mapGrid
 import star_background
 import planets
 import character
+import serial
+import threading
+from serial import SerialException
+
+WEARABLE = False
+if WEARABLE:
+	#Port
+	port = "/dev/cu.usbmodem1411"
+	#Serial
+	serial = serial.Serial(port, 50000)
+
+isDone = False
 
 # Window Dimensions
 screenW = 960
-screenH = 960
+screenH = 720
 
 # Direction + Color of Light
 numLights = 1
@@ -112,12 +124,14 @@ def display():
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
 
+	updateOkay = False
+
 	# aim for about 30 fps
 	if (currentTime + 0.03 < time.time()):
 		if speed != speed_update:
 			speed = min(speed + 0.01, speed_update)
 		char.update(speed)
-		print char.distXTraveled
+		score += char.checkForDiamondCollision()
 		if char.lastHundred < int(char.distXTraveled/(speed*10)) /100:
 			char.lastHundred = int(char.distXTraveled/(speed*10)) /100
 			speed_update = speed_update + 0.02
@@ -125,6 +139,7 @@ def display():
 		currentTime = time.time()
 		if not char.stopAnimation:
 			score += 10
+		updateOkay = True
 
 	gluLookAt(-0.3+char.distXTraveled,0,0.7, 0+char.distXTraveled+1, 0, 0, 0, 0, 1)
 
@@ -155,7 +170,7 @@ def display():
 	star_background.display(starrySkyTex, isTex, char.distXTraveled)
 
 
-	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, char.distXTraveled)
+	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, char.distXTraveled, updateOkay)
 	planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, char.distXTraveled, speed)
 	char.draw(ambient,diffuse,specular,emission,shininess)	
 	glPopMatrix()
@@ -251,8 +266,9 @@ def loadSpeedTextHash():
 
 #keyHash is a parameter in controls.py
 def keyPressed(*args):
-	global character
+	global char, isDone
 	if args[0].lower() == 'q':
+		isDone = True
 		sys.exit()
 	if args[0].lower() == 'j':
 		char.updateComm('left')
@@ -261,12 +277,26 @@ def keyPressed(*args):
 	if args[0].lower() == 'v':
 		char.updateComm('jump')
 
-
+def serial_read():
+	global port, serial, isDone
+	while not isDone:
+		try:
+			value = serial.read()
+			#print value
+			#if value == 'j':
+			#	char.updateComm('jump')
+			if value == 'r':
+				char.updateComm('right')
+			if value == 'l':
+				char.updateComm('left')	
+		except:
+			continue
 
 def idleFunc():
 	glutPostRedisplay()
 
 def main():
+	global WEARABLE
 	glutInit(sys.argv[0:1])
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
@@ -279,7 +309,10 @@ def main():
 	glutReshapeFunc(resize)
 	glutKeyboardFunc(keyPressed)
 	initGL(screenW, screenH)
-	glUseProgram(program)  
+	glUseProgram(program)
+	if WEARABLE:
+		t1 = threading.Thread(target = serial_read)
+		t1.start() 
 	glutMainLoop()
 
 if __name__ == "__main__":
