@@ -123,11 +123,11 @@ def display():
 	gluOrtho2D(0.0, screenW, 0.0, screenH)
 	if playing:
 		drawText(score)
+		displaySpeedMessage()
 	if mainMenu:
 		drawTitle()
 	if gameOver:
 		drawGameOver(score)
-	displaySpeedMessage()
 	glPopMatrix()
 
 	glMatrixMode(GL_MODELVIEW)
@@ -305,23 +305,37 @@ def drawGameOver(score):
 	isTex = glGetUniformLocation(program, "isTex")
 	glUniform1i(isTex, 1)
 	glEnable(GL_TEXTURE_2D)
+
+	xIndex = screenW/2 - (64*4) - 32
+	for i in ['G','A','M','E',' ','O','V','E','R']:
+		id = textHash[i]
+		setupTex(id)
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+64, screenH*3/4-64)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH*3/4-64)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH*3/4)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+64, screenH*3/4)
+		glEnd()
+		xIndex += 64
+
 	xIndex = screenW/2 - (36*7)
 	for i in ['S','C','O','R','E',' ']:
 		id = textHash[i]
 		setupTex(id)
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+36, screenH/2)
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+36, screenH/2-36)
 		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH/2-36)
-		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH/2-36)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH/2)
 		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+36, screenH/2)
 		glEnd()
-
 		xIndex += 36
 
 	numDigits = 8
 	val = score
 	digits = []
+
 	for i in range(0,numDigits+1):
 		digits.append(val % 10)
 		val = val / 10
@@ -332,9 +346,9 @@ def drawGameOver(score):
 		setupTex(id)
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+36, screenH/2)
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+36, screenH/2-36)
 		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH/2-36)
-		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH/2-36)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH/2)
 		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+36, screenH/2)
 		glEnd()
 
