@@ -27,15 +27,19 @@ gateLow = 0.5
 gateHigh = 1.0
 gateDirection = 1
 
-def display(ambient, diffuse, specular, emission, shininess, rows, columns, mapG, characterTranslate, updateOkay):
+def display(ambient, diffuse, specular, emission, shininess, rows, columns, mapG, characterTranslate, updateOkay, mainMenu):
 	global gateColor, gateLow, gateHigh, gateDirection
-	if int(characterTranslate + rows) not in mapG.mapGrid.keys():
-		if random.random() > 0.15:
-			length = int(random.random()*10) + 5
-			mapG.addRandomPath(length, characterTranslate)
-		else:
-			length = int(random.random()*2) + 1
-			mapG.addFigureEightPath(length, characterTranslate)
+	if not mainMenu:
+		if int(characterTranslate + rows) not in mapG.mapGrid.keys():
+			if random.random() > 0.15:
+				length = int(random.random()*10) + 5
+				mapG.addRandomPath(length, characterTranslate)
+			else:
+				length = int(random.random()*2) + 1
+				mapG.addFigureEightPath(length, characterTranslate)
+	else:
+		if int(characterTranslate + rows) not in mapG.mapGrid.keys():
+			mapG.addAllBlocks(10, characterTranslate, mainMenu)
 
 	gateColor += gateDirection*0.01
 	if gateColor > gateHigh:

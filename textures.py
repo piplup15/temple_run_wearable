@@ -42,15 +42,29 @@ def loadTexture(name):
 
 def loadFont():
 	textHash = {}
-	characters = ['0','1','2','3','4','5','6','7','8','9','S','C','O','R','E',' ','gF','gA','gS','gT','gE','gR','g.']
+	characters = ['0','1','2','3','4','5','6','7','8','9','S','C','O','R','E','U','N']
+	characters += [' ','gF','gA','gS','gT','gE','gR','g.', 'rR', 'oA', 'yI', 'gN', 'cB', 'bO', 'pW']
+	characters += ['T','A','G','M','V']
 	for char in characters:
 		im = Image.new("RGBA", (98, 98), (100,100,100,0))
 		usr_font = ImageFont.truetype("yoshisst.ttf", 120)
 		d_usr = ImageDraw.Draw(im)
 		d_usr.fontmode = "1"
 		ix, iy, image = im.size[0], im.size[1], im.tostring("raw", "RGBA", 0, -1)
-		if len(char) == 2 and char[0] == 'g':
-			d_usr.text((10,0), char[1], (50,200,50, 200), font=usr_font)
+		if len(char) == 2 and char[0] == 'r':
+			d_usr.text((10,0), char[1], (255,50,50, 200), font=usr_font)
+		elif len(char) == 2 and char[0] == 'o':
+			d_usr.text((10,0), char[1], (255,125,50, 200), font=usr_font)
+		elif len(char) == 2 and char[0] == 'y':
+			d_usr.text((10,0), char[1], (255,255,50, 200), font=usr_font)
+		elif len(char) == 2 and char[0] == 'g':
+			d_usr.text((10,0), char[1], (50,255,50, 200), font=usr_font)
+		elif len(char) == 2 and char[0] == 'c':
+			d_usr.text((10,0), char[1], (50,255,255, 200), font=usr_font)
+		elif len(char) == 2 and char[0] == 'b':
+			d_usr.text((10,0), char[1], (50,150,150, 200), font=usr_font)
+		elif len(char) == 2 and char[0] == 'p':
+			d_usr.text((10,0), char[1], (50,50,255, 200), font=usr_font)
 		else:
 			d_usr.text((10,0), char, (200,200,200, 255), font=usr_font)
 		pix = im.load()

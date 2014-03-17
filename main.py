@@ -64,6 +64,11 @@ shouldDisplaySpeedMessage = False
 speedTextSequenceIndex = 0
 speedTextHash = {}
 
+mainMenu = True
+playing = False
+gameOver = False
+delay = 0
+
 def initGL(w, h):
 	global program, starrySkyTex, mapG, char, currentTime, textHash
 	glClearColor(0.0,0.0,0.0,1)
@@ -85,7 +90,6 @@ def initGL(w, h):
 
 	textHash = loadFont()
 	loadSpeedTextHash()
-	## TEMP
 
 	if not glUseProgram:
 		print 'Missing Shader Objects!'
@@ -106,7 +110,7 @@ def resize(w, h):
 	glMatrixMode(GL_MODELVIEW)
 
 def display():
-	global program, currentTime, score, screenH, screenW, speed, speed_update, shouldDisplaySpeedMessage
+	global program, mainMenu, currentTime, char, mapG, playing, gameOver, score, screenH, screenW, speed, speed_update, delay, shouldDisplaySpeedMessage
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -117,7 +121,12 @@ def display():
 	glPushMatrix()
 	glLoadIdentity()
 	gluOrtho2D(0.0, screenW, 0.0, screenH)
-	drawText(score)
+	if playing:
+		drawText(score)
+	if mainMenu:
+		drawTitle()
+	if gameOver:
+		drawGameOver(score)
 	displaySpeedMessage()
 	glPopMatrix()
 
@@ -126,20 +135,45 @@ def display():
 
 	updateOkay = False
 
-	# aim for about 30 fps
-	if (currentTime + 0.03 < time.time()):
-		if speed != speed_update:
-			speed = min(speed + 0.01, speed_update)
-		char.update(speed)
-		score += char.checkForDiamondCollision()
-		if char.lastHundred < int(char.distXTraveled/(speed*10)) /100:
-			char.lastHundred = int(char.distXTraveled/(speed*10)) /100
-			speed_update = speed_update + 0.02
-			shouldDisplaySpeedMessage = True
-		currentTime = time.time()
-		if not char.stopAnimation:
-			score += 10
-		updateOkay = True
+	if playing:
+		# aim for about 30 fps
+		if (currentTime + 0.03 < time.time()):
+			if speed != speed_update:
+				speed = min(speed + 0.01, speed_update)
+			char.update(speed)
+			score += char.checkForDiamondCollision()
+			if char.lastHundred < int(char.distXTraveled/(speed*10)) /100:
+				char.lastHundred = int(char.distXTraveled/(speed*10)) /100
+				speed_update = speed_update + 0.02
+				shouldDisplaySpeedMessage = True
+			currentTime = time.time()
+			if not char.stopAnimation:
+				score += 10
+			updateOkay = True
+			if char.stopAnimation:
+				delay += 1
+			if delay == 50:
+				delay = 0
+				gameOver = True
+				playing = False
+	if mainMenu:
+		if (currentTime + 0.03 < time.time()):
+			char.update(speed)
+			currentTime = time.time()
+
+	if gameOver:
+		if (currentTime + 0.03 < time.time()):
+			delay += 1
+			if delay == 100:
+				score = 0
+				mapG = mapGrid.MapGrid(ROWS, COLUMNS)
+				char = character.Character(mapG)
+				gameOver = False
+				mainMenu = True
+				speed = 0.1
+				speed_update = 0.1 
+				delay = 0
+			currentTime = time.time()
 
 	gluLookAt(-0.3+char.distXTraveled,0,0.7, 0+char.distXTraveled+1, 0, 0, 0, 0, 1)
 
@@ -169,17 +203,55 @@ def display():
 
 	star_background.display(starrySkyTex, isTex, char.distXTraveled)
 
-
-	road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, char.distXTraveled, updateOkay)
-	planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, char.distXTraveled, speed)
-	char.draw(ambient,diffuse,specular,emission,shininess)	
+	if not gameOver:
+		road.display(ambient, diffuse, specular, emission, shininess, ROWS, COLUMNS, mapG, char.distXTraveled, updateOkay, mainMenu)
+		if not mainMenu:
+			planets.drawPlanetLoop(ambient, diffuse, specular, emission, shininess, char.distXTraveled, speed)
+		char.draw(ambient,diffuse,specular,emission,shininess)	
 	glPopMatrix()
 
 	glutSwapBuffers()
 
+def drawTitle():
+	isTex = glGetUniformLocation(program, "isTex")
+	glUniform1i(isTex, 1)
+	glEnable(GL_TEXTURE_2D)
+
+	xIndex = screenW/2 - (24 + 48*5)
+
+	for i in ['rR', 'oA', 'yI', 'gN', 'cB', 'bO', 'pW',' ', 'R','U','N']:
+		id = textHash[i]
+		setupTex(id)
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+48, screenH-72)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-72)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH-24)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+48, screenH-24)
+		glEnd()
+
+		xIndex += 48
+
+	xIndex = screenW/2 - (36*6)
+	for i in ['R','U','N',' ','T','O',' ','S','T','A','R','T']:
+		id = textHash[i]
+		setupTex(id)
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+36, screenH-132)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH-132)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH-96)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+36, screenH-96)
+		glEnd()
+
+		xIndex += 36
+
+	glDisable(GL_TEXTURE_2D)
+	glUniform1i(isTex, 0)
+
+
 def drawText(score):
 	global textHash
-	val = score
 	digits = []
 	numDigits = 8
 	isTex = glGetUniformLocation(program, "isTex")
@@ -200,7 +272,7 @@ def drawText(score):
 		glEnd()
 
 		xIndex += 48
-
+	val = score
 	for i in range(0,numDigits+1):
 		digits.append(val % 10)
 		val = val / 10
@@ -228,6 +300,48 @@ def setupTex(id):
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT) 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT) 
 	glBindTexture(GL_TEXTURE_2D, id)
+
+def drawGameOver(score):
+	isTex = glGetUniformLocation(program, "isTex")
+	glUniform1i(isTex, 1)
+	glEnable(GL_TEXTURE_2D)
+	xIndex = screenW/2 - (36*7)
+	for i in ['S','C','O','R','E',' ']:
+		id = textHash[i]
+		setupTex(id)
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+36, screenH/2)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH/2-36)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH/2-36)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+36, screenH/2)
+		glEnd()
+
+		xIndex += 36
+
+	numDigits = 8
+	val = score
+	digits = []
+	for i in range(0,numDigits+1):
+		digits.append(val % 10)
+		val = val / 10
+
+	digits.reverse()
+	for digit in digits:
+		id = textHash[str(digit)]
+		setupTex(id)
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(1.0, 0.0); glVertex2f(xIndex+36, screenH/2)
+		glTexCoord2f(1.0, 1.0); glVertex2f(xIndex, screenH/2-36)
+		glTexCoord2f(0.0, 1.0); glVertex2f(xIndex, screenH/2-36)
+		glTexCoord2f(0.0, 0.0); glVertex2f(xIndex+36, screenH/2)
+		glEnd()
+
+		xIndex += 36
+
+	glDisable(GL_TEXTURE_2D)
+	glUniform1i(isTex, 0)
 
 def displaySpeedMessage():
 	global shouldDisplaySpeedMessage, speedTextHash, speedTextSequenceIndex
@@ -266,16 +380,24 @@ def loadSpeedTextHash():
 
 #keyHash is a parameter in controls.py
 def keyPressed(*args):
-	global char, isDone
-	if args[0].lower() == 'q':
-		isDone = True
-		sys.exit()
-	if args[0].lower() == 'j':
-		char.updateComm('left')
-	if args[0].lower() == 'k':
-		char.updateComm('right')
-	if args[0].lower() == 'v':
-		char.updateComm('jump')
+	global char, isDone, mainMenu, playing
+	if not mainMenu:
+		if args[0].lower() == 'q':
+			isDone = True
+			sys.exit()
+		if args[0].lower() == 'j':
+			char.updateComm('left')
+		if args[0].lower() == 'k':
+			char.updateComm('right')
+		if args[0].lower() == 'v':
+			char.updateComm('jump')
+	if mainMenu:
+		if args[0].lower() == 'q':
+			isDone = True
+			sys.exit()	
+		if args[0].lower() == 'v':
+			mainMenu = False
+			playing = True	
 
 def serial_read():
 	global port, serial, isDone

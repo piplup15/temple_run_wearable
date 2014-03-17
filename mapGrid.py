@@ -50,14 +50,15 @@ class MapGrid():
 		self.addAllBlocks(numStraight, currentRow)
 
 
-	def addAllBlocks(self, numberRows, currentRow):
+	def addAllBlocks(self, numberRows, currentRow, mainMenu=False):
 		self.cleanup(currentRow)
 		for newrow in range(self.lastRow+1, self.lastRow+1+numberRows):
 			self.mapGrid[newrow] = []
 			for col in range(self.numColumns):
 				self.mapGrid[newrow].append(1)
 		#self.spawnSpikes((numberRows+1)/2, self.lastRow+1, self.lastRow+1+numberRows)
-		self.addDiamonds(self.lastRow+1, self.lastRow+numberRows)
+		if not mainMenu:
+			self.addDiamonds(self.lastRow+1, self.lastRow+numberRows)
 		self.lastRow += numberRows
 
 	def addDiamonds(self, beginRow, endRow):

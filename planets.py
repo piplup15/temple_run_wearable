@@ -75,7 +75,7 @@ def spawn(side, characterTransformX):
 		elif side == 'R':
 			locationY = (random.random()*10) +10
 
-		locationZ = (random.random()*40) -20
+		locationZ = (random.random()*20) -20
 		locationX = 100 + characterTransformX
 		location = (locationX, locationY, locationZ)
 
