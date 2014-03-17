@@ -53,10 +53,10 @@ COLUMNS = 3
 mapG = None
 
 char = None
-speed = 0.08
+speed = 0.05
 min_speed = speed
 speed_delta = 0.02
-speed_diff_max_min = 0.05
+speed_diff_max_min = 0.07
 max_speed = min_speed + speed_diff_max_min
 speed_update = 0
 
@@ -140,11 +140,13 @@ def display():
 
 	updateOkay = False
 
+	print char.distXTraveled
+
 	if playing:
 		# aim for about 30 fps
 		if (currentTime + 0.03 < time.time()):
 			if abs(speed_update - 0) > 0.001:
-				speed = min(speed + 0.005, min_speed)
+				speed = speed + 0.005
 				min_speed = min_speed + 0.005
 				max_speed = max_speed + 0.005
 				speed_update -= 1
@@ -152,14 +154,14 @@ def display():
 				speed_update = 0
 			char.update(speed)
 			score += char.checkForDiamondCollision()
-			if char.lastHundred < int(char.distXTraveled/(speed*10)) /100:
-				char.lastHundred = int(char.distXTraveled/(speed*10)) /100
+			if char.lastHundred < int(char.distXTraveled/100):
+				char.lastHundred = int(char.distXTraveled/100)
 				speed_update = speed_delta / 0.005
 				shouldDisplaySpeedMessage = True
 			currentTime = time.time()
 			if not char.stopAnimation:
 				if max_speed - speed > speed - min_speed:
-					score += 10
+					score += 0
 				else:
 					score += 50
 			updateOkay = True
@@ -183,7 +185,7 @@ def display():
 				char = character.Character(mapG)
 				gameOver = False
 				mainMenu = True
-				speed = 0.08
+				speed = 0.06
 				min_speed = speed
 				speed_delta = 0.02
 				speed_diff_max_min = 0.05
@@ -431,21 +433,33 @@ def keyPressed(*args):
 			isDone = True
 			sys.exit()	
 		if args[0].lower() == 'v':
+			char.lastHundred = int(char.distXTraveled/100)
 			mainMenu = False
 			playing = True	
 
 def serial_read():
-	global port, serial, isDone
+	global port, serial, isDone, mainMenu, playing, gameOver, speed, char
 	while not isDone:
 		try:
 			value = serial.read()
-			#print value
-			#if value == 'j':
-			#	char.updateComm('jump')
-			if value == 'r':
-				char.updateComm('right')
-			if value == 'l':
-				char.updateComm('left')	
+			if mainMenu:
+				if value == 'y':
+					char.lastHundred = int(char.distXTraveled/100)
+					mainMenu = False
+					playing = True
+			if playing:
+				if value == 'r':
+					char.updateComm('right')
+				if value == 'l':
+					char.updateComm('left')	
+				if value == 'j':
+					char.updateComm('jump')
+				if value == 'y':
+					speed = min(max_speed, speed + 0.005)
+				if value == 'n':
+					speed = max(min_speed, speed - 0.001)
+			print value
+
 		except:
 			continue
 
@@ -459,7 +473,7 @@ def main():
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 	glutInitWindowSize(screenW, screenH)
 	glutInitWindowPosition(0, 0)
-	window = glutCreateWindow("Wearable Temple Run")
+	window = glutCreateWindow("Rainbow Run")
 
 	glutDisplayFunc(display)
 	glutIdleFunc(idleFunc)
