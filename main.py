@@ -53,8 +53,12 @@ COLUMNS = 3
 mapG = None
 
 char = None
-speed = 0.1
-speed_update = 0.1 
+speed = 0.08
+min_speed = speed
+speed_delta = 0.02
+speed_diff_max_min = 0.05
+max_speed = min_speed + speed_diff_max_min
+speed_update = 0
 
 currentTime = None
 score = 0
@@ -110,7 +114,8 @@ def resize(w, h):
 	glMatrixMode(GL_MODELVIEW)
 
 def display():
-	global program, mainMenu, currentTime, char, mapG, playing, gameOver, score, screenH, screenW, speed, speed_update, delay, shouldDisplaySpeedMessage
+	global program, min_speed, speed_delta, speed_diff_max_min, max_speed, mainMenu, currentTime, char, mapG, playing, gameOver, score, screenH, screenW, speed, speed_update, delay, shouldDisplaySpeedMessage
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -138,17 +143,25 @@ def display():
 	if playing:
 		# aim for about 30 fps
 		if (currentTime + 0.03 < time.time()):
-			if speed != speed_update:
-				speed = min(speed + 0.01, speed_update)
+			if abs(speed_update - 0) > 0.001:
+				speed = min(speed + 0.005, min_speed)
+				min_speed = min_speed + 0.005
+				max_speed = max_speed + 0.005
+				speed_update -= 1
+			else:
+				speed_update = 0
 			char.update(speed)
 			score += char.checkForDiamondCollision()
 			if char.lastHundred < int(char.distXTraveled/(speed*10)) /100:
 				char.lastHundred = int(char.distXTraveled/(speed*10)) /100
-				speed_update = speed_update + 0.02
+				speed_update = speed_delta / 0.005
 				shouldDisplaySpeedMessage = True
 			currentTime = time.time()
 			if not char.stopAnimation:
-				score += 10
+				if max_speed - speed > speed - min_speed:
+					score += 10
+				else:
+					score += 50
 			updateOkay = True
 			if char.stopAnimation:
 				delay += 1
@@ -394,7 +407,7 @@ def loadSpeedTextHash():
 
 #keyHash is a parameter in controls.py
 def keyPressed(*args):
-	global char, isDone, mainMenu, playing
+	global char, isDone, mainMenu, playing, speed
 	if not mainMenu:
 		if args[0].lower() == 'q':
 			isDone = True
@@ -405,6 +418,10 @@ def keyPressed(*args):
 			char.updateComm('right')
 		if args[0].lower() == 'v':
 			char.updateComm('jump')
+		if args[0].lower() == 'n':
+			speed = min(max_speed, speed + 0.005)
+		if args[0].lower() == 'm':
+			speed = max(min_speed, speed - 0.005)
 	if mainMenu:
 		if args[0].lower() == 'q':
 			isDone = True
