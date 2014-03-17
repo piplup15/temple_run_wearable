@@ -23,7 +23,7 @@ import serial
 import threading
 from serial import SerialException
 
-WEARABLE = False
+WEARABLE = True
 if WEARABLE:
 	#Port
 	port = "/dev/cu.usbmodem1411"
@@ -139,8 +139,6 @@ def display():
 	glLoadIdentity()
 
 	updateOkay = False
-
-	print char.distXTraveled
 
 	if playing:
 		# aim for about 30 fps
