@@ -183,8 +183,12 @@ def display():
 				char = character.Character(mapG)
 				gameOver = False
 				mainMenu = True
-				speed = 0.1
-				speed_update = 0.1 
+				speed = 0.08
+				min_speed = speed
+				speed_delta = 0.02
+				speed_diff_max_min = 0.05
+				max_speed = min_speed + speed_diff_max_min
+				speed_update = 0
 				delay = 0
 			currentTime = time.time()
 
